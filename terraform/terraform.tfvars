@@ -1,0 +1,8 @@
+domain_name="mkdirprince.uk"
+key_name="mkdirprince-key"
+vpc_id="vpc-013a1615e7f26dd6b"
+subnet_id = "subnet-0ca1cf7c0299e6e82"
+key_path = "~/mkdirprince-key.pem"
+admin_email= "mkdirprince@gmail.com"
+git_repo_url= "https://github.com/mkdirprince/infra-stage4.git"
+git_branch= "main"
