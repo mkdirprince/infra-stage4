@@ -32,12 +32,11 @@ This project streamlines cloud environment setup by combining Infrastructure as 
 
 ## Prerequisites
 
-You'll need:
+You'll need to download and have the following:
 
-- Terraform - Download from terraform.io
-- Ansible - Follow installation guide at docs.ansible.com
+- Terraform
+- Ansible
 - Cloud Credentials - Valid access keys for AWS, GCP, or Azure
-- SSH Keys - Generated pair for secure server access
 
 ---
 
@@ -70,30 +69,3 @@ You'll need:
    ```bash
    terraform apply --auto-approve
    ```
-
-### Step 2: Configure Servers with Ansible
-
-1. Navigate to the ansible directory:
-   ```bash
-   cd ../ansible
-   ```
-2. Run the Ansible playbook:
-   `bash
-ansible-playbook -i inventory/hosts.yml playbook.yml
-`
-   The Ansible automation folder plays two roles:
-3. Dependency Role
-   - Installs and configures:
-     - Docker
-     - Docker Compose
-     - Other system dependencies specified
-4. Deployment Role
-   - runs deployment:
-     - Clones the application repository
-     - Configures environment variables
-     - Sets up Docker Compose with the application
-     - Configures Traefik as a reverse proxy with automatic SSL/TLS
-
-### Reverse Proxy:
-
-Reverse Proxy and SSL/TLS is handles by Traefik
