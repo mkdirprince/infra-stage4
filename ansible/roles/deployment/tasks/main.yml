@@ -4,12 +4,7 @@
     dest: "/home/ubuntu/app"
     version: main
 
-- name: stop running docker containers
-  shell: docker-compose down
-  args:
-    chdir: /home/ubuntu/app
-
 - name: Start application with Docker Compose
-  shell: docker-compose up -d --build
+  shell: docker-compose up -d
   args:
     chdir: /home/ubuntu/app
