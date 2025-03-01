@@ -1,4 +1,4 @@
-# create security group
+# Create Security Group
 resource "aws_security_group" "stage4" {
   name   = "stage4"
   vpc_id = var.vpc_id
@@ -8,7 +8,8 @@ resource "aws_security_group" "stage4" {
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "stage4" {
+# Security Group Rules
+resource "aws_vpc_security_group_ingress_rule" "stage4_ssh" {
   security_group_id = aws_security_group.stage4.id
   cidr_ipv4         = "0.0.0.0/0"
   from_port         = 22
@@ -17,7 +18,7 @@ resource "aws_vpc_security_group_ingress_rule" "stage4" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "stage4_http" {
-  security_group_id = aws_security_group.stag4.id
+  security_group_id = aws_security_group.stage4.id
   cidr_ipv4         = "0.0.0.0/0"
   from_port         = 80
   ip_protocol       = "tcp"
@@ -32,8 +33,8 @@ resource "aws_vpc_security_group_ingress_rule" "stage4_https" {
   to_port           = 443
 }
 
-resource "aws_vpc_security_group_ingress_rule" "stage4__traefik" {
-  security_group_id = aws_security_group.stage.id
+resource "aws_vpc_security_group_ingress_rule" "stage4_traefik" {
+  security_group_id = aws_security_group.stage4.id
   cidr_ipv4         = "0.0.0.0/0"
   from_port         = 8080
   ip_protocol       = "tcp"
@@ -43,7 +44,7 @@ resource "aws_vpc_security_group_ingress_rule" "stage4__traefik" {
 resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
   security_group_id = aws_security_group.stage4.id
   cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "-1" 
+  ip_protocol       = "-1"
 }
 
 # create ec2 instance
@@ -52,7 +53,7 @@ resource "aws_instance" "stage4_instance" {
   instance_type               = var.instance_type
   key_name                    = var.key_name
   subnet_id                   = var.subnet_id
-  vpc_security_group_ids      = [aws_security_group.stag4.id]
+  vpc_security_group_ids      = [aws_security_group.stage4.id]
   associate_public_ip_address = true
 
   root_block_device {
@@ -77,25 +78,25 @@ resource "aws_instance" "stage4_instance" {
   }
 }
 
-resource "aws_route53_zone" "stage4_zone" {
-  name = "mkdirprince.uk"
 
+# Create Route53 Zone
+resource "aws_route53_zone" "stage4" {
+  name = "kobby.cloud"
 }
 
-# Create Route53 record for the domain
+# Create Route53 Records
 resource "aws_route53_record" "domain" {
   count   = var.domain_name != "" ? 1 : 0
   zone_id = aws_route53_zone.stage4.zone_id
   name    = var.domain_name
   type    = "A"
   ttl     = 300
-  records = [aws_instance.devops_stage4_instance.public_ip]
+  records = [aws_instance.stage4_instance.public_ip]
 }
 
-# Create subdomains for the APIs
 resource "aws_route53_record" "auth_subdomain" {
   count   = var.domain_name != "" ? 1 : 0
-  zone_id = aws_route53_zone.stage4_zone.zone_id
+  zone_id = aws_route53_zone.stage4.zone_id
   name    = "auth.${var.domain_name}"
   type    = "A"
   ttl     = 300
@@ -104,7 +105,7 @@ resource "aws_route53_record" "auth_subdomain" {
 
 resource "aws_route53_record" "todos_subdomain" {
   count   = var.domain_name != "" ? 1 : 0
-  zone_id = aws_route53_zone.tage4_zone.zone_id
+  zone_id = aws_route53_zone.stage4.zone_id
   name    = "todos.${var.domain_name}"
   type    = "A"
   ttl     = 300
@@ -113,14 +114,14 @@ resource "aws_route53_record" "todos_subdomain" {
 
 resource "aws_route53_record" "users_subdomain" {
   count   = var.domain_name != "" ? 1 : 0
-  zone_id = aws_route53_zone.stage4_zone.zone_id
+  zone_id = aws_route53_zone.stage4.zone_id
   name    = "users.${var.domain_name}"
   type    = "A"
   ttl     = 300
   records = [aws_instance.stage4_instance.public_ip]
 }
 
-# Generate Ansible inventory file
+# Generate Ansible Inventory File
 resource "local_file" "ansible_inventory" {
   content = templatefile("../ansible/templates/inventory.tmpl", {
     ip_address   = aws_instance.stage4_instance.public_ip
@@ -134,7 +135,7 @@ resource "local_file" "ansible_inventory" {
   depends_on = [aws_instance.stage4_instance, null_resource.create_ansible_dirs]
 }
 
-# Generate Ansible variables file
+# Generate Ansible Variables File
 resource "local_file" "ansible_vars" {
   content = templatefile("../ansible/templates/vars.tmpl", {
     domain_name  = var.domain_name
@@ -157,10 +158,15 @@ resource "null_resource" "create_ansible_dirs" {
 }
 
 
-# Run Ansible playbook
+
+# Run Ansible Playbook
 resource "null_resource" "ansible_provisioner" {
   triggers = {
     instance_id = aws_instance.stage4_instance.id
+  }
+
+  provisioner "local-exec" {
+    command = "sleep 30"
   }
 
   provisioner "local-exec" {
