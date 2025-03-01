@@ -1,5 +1,0 @@
-- hosts: stage4
-  become: true
-  roles:
-    - dependencies
-    - deployment
